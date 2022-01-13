@@ -119,6 +119,158 @@ class _MapScreenState extends State<MapScreen> {
           }
         }
       }
+
+      //add more markers here
+    });
+
+    return markers;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      // appBar: AppBar(
+      //   title: Text(widget.title),
+      // ),
+      body: Column(
+        children: <Widget>[
+          Expanded(
+            // height: 600,
+            child: GoogleMap(
+              initialCameraPosition: warangalPlace,
+              mapType: MapType.normal,
+              myLocationButtonEnabled: true,
+              myLocationEnabled: true,
+              zoomControlsEnabled: false,
+              markers: getmarkers(),
+              onMapCreated: (GoogleMapController controller) => {
+                _controllerGoogleMap.complete(controller),
+                newGoogleMapController = controller,
+                setState(() {
+                  lattitude = myLatPosition!.latitude as String?;
+                  longitude = myLatPosition!.longitude as String?;
+                }),
+                locateMyPosition(),
+              },
+              padding: const EdgeInsets.only(top: 100.0),
+            ),
+          ),
+          Container(
+            height: 200,
+            decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(15),
+                    topRight: Radius.circular(15)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black,
+                    blurRadius: 15,
+                  )
+                ]),
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Padding(
+                    padding: EdgeInsets.all(18.0),
+                    child: Row(
+                      children: [
+                        const Text(
+                          'Select Donor Location ',
+                          style: TextStyle(color: Colors.grey, fontSize: 20),
+                        ),
+                        responseData != null ? Text('(' '${responseData.length} ''found)',style:TextStyle(fontSize: 18,color: Colors.grey[400],fontStyle: FontStyle.italic)) : const Text('')
+                      ],
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 24.0, vertical: 15),
+                  child: name == null &&
+                          age == null &&
+                          number == null &&
+                          gender == null
+                      ? Text(
+                          myLatPosition != null
+                              ? myLatPosition.toString()
+                              : 'Finding Your Location...',
+                          // '${widget.userPosition!.latitude}, ${widget.userPosition!.longitude}',
+                          style: const TextStyle(
+                              color: Colors.black, fontSize: 20),
+                        )
+                      : SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              const Text('Name:\t',
+                                  style: TextStyle(
+                                      color: Colors.black, fontSize: 19)),
+                              Text('$name\t',
+                                  style: const TextStyle(
+                                      color: Colors.red, fontSize: 22)),
+                              const Text(',\tAge:\t',
+                                  style: TextStyle(
+                                      color: Colors.black, fontSize: 19)),
+                              Text(age!,
+                                  style: const TextStyle(
+                                      color: Colors.red, fontSize: 22)),
+                              const Text(',\tGender:\t',
+                                  style: TextStyle(
+                                      color: Colors.black, fontSize: 19)),
+                              Text(gender!,
+                                  style: const TextStyle(
+                                      color: Colors.red, fontSize: 22)),
+                            ],
+                          ),
+                        ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(18.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (number == null) {
+                        Fluttertoast.showToast(
+                            msg: "Select the donor",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.CENTER,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: Colors.red,
+                            textColor: Colors.white,
+                            fontSize: 16.0);
+                      } else {
+                        launch("tel://$number");
+                      }
+                    },
+                    child: const Text('CONTACT DONOR'),
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.red,
+                    ),
+                  ),
+                )
+              ],
+            ),
+          )
+        ],
+      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: _incrementCounter,
+      //   tooltip: 'Increment',
+      //   child: const Icon(Icons.add),
+      // ),
+    );
+  }
+}
+
+
+
+
+
+
+//Extra code for reference
       // markers.add(Marker(
       //   onTap: () {
       //     setState(() {
@@ -366,148 +518,3 @@ class _MapScreenState extends State<MapScreen> {
       //   ),
       //   icon: BitmapDescriptor.defaultMarker, //Icon for Marker
       // ));
-
-      //add more markers here
-    });
-
-    return markers;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      // appBar: AppBar(
-      //   title: Text(widget.title),
-      // ),
-      body: Column(
-        children: <Widget>[
-          Expanded(
-            // height: 600,
-            child: GoogleMap(
-              initialCameraPosition: warangalPlace,
-              mapType: MapType.normal,
-              myLocationButtonEnabled: true,
-              myLocationEnabled: true,
-              zoomControlsEnabled: false,
-              markers: getmarkers(),
-              onMapCreated: (GoogleMapController controller) => {
-                _controllerGoogleMap.complete(controller),
-                newGoogleMapController = controller,
-                setState(() {
-                  lattitude = myLatPosition!.latitude as String?;
-                  longitude = myLatPosition!.longitude as String?;
-                }),
-                locateMyPosition(),
-              },
-              padding: const EdgeInsets.only(top: 100.0),
-            ),
-          ),
-          Container(
-            height: 200,
-            decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(15),
-                    topRight: Radius.circular(15)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black,
-                    blurRadius: 15,
-                  )
-                ]),
-            child: Column(
-              children: [
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: Padding(
-                    padding: EdgeInsets.all(18.0),
-                    child: Row(
-                      children: [
-                        const Text(
-                          'Select Donor Location ',
-                          style: TextStyle(color: Colors.grey, fontSize: 20),
-                        ),
-                        responseData != null ? Text('(' '${responseData.length} ''found)',style:TextStyle(fontSize: 18,color: Colors.grey[400],fontStyle: FontStyle.italic)) : const Text('')
-                      ],
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24.0, vertical: 15),
-                  child: name == null &&
-                          age == null &&
-                          number == null &&
-                          gender == null
-                      ? Text(
-                          myLatPosition != null
-                              ? myLatPosition.toString()
-                              : 'Finding Your Location...',
-                          // '${widget.userPosition!.latitude}, ${widget.userPosition!.longitude}',
-                          style: const TextStyle(
-                              color: Colors.black, fontSize: 20),
-                        )
-                      : SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              const Text('Name:\t',
-                                  style: TextStyle(
-                                      color: Colors.black, fontSize: 19)),
-                              Text('$name\t',
-                                  style: const TextStyle(
-                                      color: Colors.red, fontSize: 22)),
-                              const Text(',\tAge:\t',
-                                  style: TextStyle(
-                                      color: Colors.black, fontSize: 19)),
-                              Text(age!,
-                                  style: const TextStyle(
-                                      color: Colors.red, fontSize: 22)),
-                              const Text(',\tGender:\t',
-                                  style: TextStyle(
-                                      color: Colors.black, fontSize: 19)),
-                              Text(gender!,
-                                  style: const TextStyle(
-                                      color: Colors.red, fontSize: 22)),
-                            ],
-                          ),
-                        ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(18.0),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (number == null) {
-                        Fluttertoast.showToast(
-                            msg: "Select the donor",
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.CENTER,
-                            timeInSecForIosWeb: 1,
-                            backgroundColor: Colors.red,
-                            textColor: Colors.white,
-                            fontSize: 16.0);
-                      } else {
-                        launch("tel://$number");
-                      }
-                    },
-                    child: const Text('CONTACT DONOR'),
-                    style: ElevatedButton.styleFrom(
-                      primary: Colors.red,
-                    ),
-                  ),
-                )
-              ],
-            ),
-          )
-        ],
-      ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: _incrementCounter,
-      //   tooltip: 'Increment',
-      //   child: const Icon(Icons.add),
-      // ),
-    );
-  }
-}
