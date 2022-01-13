@@ -16,6 +16,7 @@ import 'package:android_intent/android_intent.dart';
 
 class SearchScreen extends StatefulWidget {
   final String? username;
+  // final String? mobile;
   const SearchScreen({Key? key, this.username}) : super(key: key);
 
   @override
@@ -54,12 +55,15 @@ class _SearchScreenState extends State<SearchScreen> {
     var paramsData = bloodgroup;
     final response = await http
         .get('https://bloodpool-backend.herokuapp.com/search/$paramsData');
-
-    var responseData = json.decode(response.body);
-    setState(() {
-      searchDonors = responseData;
-      allDonors = searchDonors;
-    });
+    try {
+      var responseData = json.decode(response.body);
+      setState(() {
+        searchDonors = responseData;
+        allDonors = searchDonors;
+      });
+    } catch (e) {
+      Fluttertoast.showToast(msg: 'Database Error, Please report to bloodpool team');
+    }
   }
 
   getData() async {
@@ -80,6 +84,29 @@ class _SearchScreenState extends State<SearchScreen> {
     // allDonors = responseData[]
   }
 
+  getLocation() async {
+    Future.delayed(const Duration(seconds: 5), () async {
+      final response = await http.put(
+          Uri.parse(
+              'https://bloodpool-backend.herokuapp.com/update/location/${widget.username}'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: jsonEncode(
+            <String, double>{
+              "latitude": myLatPosition!.latitude,
+              "longitude": myLatPosition!.longitude
+            },
+          ));
+      // var responseData = json.decode(response.body);
+      if (response.statusCode == 200) {
+        Fluttertoast.showToast(msg: 'Location Updated!!');
+      } else {
+        Fluttertoast.showToast(msg: 'Location not updated!!');
+      }
+    });
+  }
+
   void locateMyPosition() async {
     Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.bestForNavigation);
@@ -87,13 +114,18 @@ class _SearchScreenState extends State<SearchScreen> {
       myLatPosition = position;
     });
 
-    LatLng latLatPosition = LatLng(position.latitude, position.longitude);
+    Fluttertoast.showToast(
+        msg: '${myLatPosition!.latitude},${myLatPosition!.longitude}');
 
-    CameraPosition cameraPosition =
-        CameraPosition(target: latLatPosition, zoom: 15);
+    getLocation();
 
-    newGoogleMapController!
-        .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+    // LatLng latLatPosition = LatLng(position.latitude, position.longitude);
+
+    // CameraPosition cameraPosition =
+    //     CameraPosition(target: latLatPosition, zoom: 15);
+
+    // newGoogleMapController!
+    //     .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
   }
 
   // Future<bool> _requestPermission(PermissionGroup permission) async {

@@ -31,6 +31,7 @@ class _MyAppState extends State<MyApp> {
   String? email;
   String? password;
   String? username;
+  String? mobile;
   getEmailSF() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? emailSF = prefs.getString('email');
@@ -58,12 +59,22 @@ class _MyAppState extends State<MyApp> {
     return password;
   }
 
+  // getMobileSF() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   String? mobileSF = prefs.getString('mobile');
+  //   setState(() {
+  //     mobile = mobileSF;
+  //   });
+  //   return mobile;
+  // }
+
   @override
   void initState() {
     super.initState();
     getEmailSF();
     getPasswordSF();
     getUsernameSF();
+    // getMobileSF();
   }
 
   @override

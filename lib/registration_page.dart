@@ -97,17 +97,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     LatLng latLatPosition = LatLng(position.latitude, position.longitude);
 
-    CameraPosition cameraPosition =
-        CameraPosition(target: latLatPosition, zoom: 15);
+    position.latitude != null
+        ? Fluttertoast.showToast(
+            msg: "${position.latitude},${position.longitude}",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0)
+        : null;
 
-    newGoogleMapController!
-        .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+    // position.latitude != null ? updateLocation() : null;
+
+    // CameraPosition cameraPosition =
+    //     CameraPosition(target: latLatPosition, zoom: 15);
+
+    // newGoogleMapController!
+    //     .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
   }
+
+  // void updateLocation() async {
+  //   final response = await http.post(
+  //     Uri.parse(
+  //         'https://3062-2401-4900-5082-8ab1-d9b6-da9f-633d-24cf.ngrok.io/update/location/'),
+  //     headers: <String, String>{
+  //       'Content-Type': 'application/json; charset=UTF-8',
+  //     },
+  //     body: jsonEncode(<String, String>{
+  //       "latitude": myLatPosition!.latitude.toString(),
+  //       "longitude": myLatPosition!.longitude.toString()
+  //     }),
+  //   );
+
+  //   if (response.statusCode == 200) {
+  //     Fluttertoast.showToast(msg: ' We have got you!');
+  //   }
+  // }
 
   @override
   void initState() {
     super.initState();
     selectedDate = todaysDate;
+    locateMyPosition();
   }
 
   Widget _buildNameTF() {
@@ -994,7 +1026,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   confirmPassWord.isNotEmpty &&
                   selectedDate != todaysDate &&
                   passWord.isNotEmpty &&
-                  gender != null  &&
+                  gender != null &&
                   email.isNotEmpty &&
                   phone.isNotEmpty) {
                 Fluttertoast.showToast(
@@ -1083,6 +1115,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       prefs.setString('password', passWord);
     }
 
+    addMobiletoSF() async {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('mobile', phone);
+    }
+
     final response = await http.post(
       Uri.parse('https://bloodpool-backend.herokuapp.com/store'),
       headers: <String, String>{
@@ -1095,10 +1132,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
         "email": email,
         "bloodgroup": selectedBlood!,
         "age": "$age",
-        "gender":"$gender",
+        "gender": "$gender",
         "photo": '$imageLink',
         "aadharno": aadhar.replaceAll(' ', ''),
-        "mobilenumber": phone
+        "mobilenumber": phone,
+        "latitude": myLatPosition!.latitude.toString(),
+        "longitude": myLatPosition!.longitude.toString()
       }),
     );
 
@@ -1106,12 +1145,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
       addEmailtoSF();
       addPasswordtoSF();
       addUsernametoSF();
+      addMobiletoSF();
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text("Registered Succesfully"),
       ));
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => SearchScreen(username: username,)),
+        MaterialPageRoute(
+            builder: (context) => SearchScreen(
+                  username: username,
+                )),
       );
     } else {
       print(response.body);
@@ -1303,8 +1346,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         width: 40,
                                         child: Container(
                                           color: Colors.white70,
-                                          child:
-                                              Image.asset('assets/home_logo.png'),
+                                          child: Image.asset(
+                                              'assets/home_logo.png'),
                                         ),
                                       ),
                                     )

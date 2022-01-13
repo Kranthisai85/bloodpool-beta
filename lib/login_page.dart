@@ -21,6 +21,7 @@ class LogInPage extends StatefulWidget {
 
 class _LogInPageState extends State<LogInPage> {
   late String name;
+  String? mobile;
   String passWord = "";
   late File imageFile;
   TextEditingController nameController = TextEditingController();
@@ -235,7 +236,6 @@ class _LogInPageState extends State<LogInPage> {
     // }
 
     validate() async {
-
       addUsernametoSF() async {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         prefs.setString('username', name);
@@ -251,9 +251,13 @@ class _LogInPageState extends State<LogInPage> {
         prefs.setString('password', passWord);
       }
 
+      // addMobiletoSF() async {
+      //   SharedPreferences prefs = await SharedPreferences.getInstance();
+      //   prefs.setString('mobile', mobile!);
+      // }
+
       final response = await http.post(
-        Uri.parse(
-            'https://bloodpool-backend.herokuapp.com/loginpost'),
+        Uri.parse('https://bloodpool-backend.herokuapp.com/loginpost'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -264,21 +268,22 @@ class _LogInPageState extends State<LogInPage> {
       if (response.body == "in correct credentials") {
         Fluttertoast.showToast(
             msg: '  Wrong Email or Password!\n     Please try again :(');
-      }
-      else if(response.statusCode == 502){
-        Fluttertoast.showToast(
-            msg: '  Server Down!!!!\n  Please try later :(');
-      }
-      else {
+      } else if (response.statusCode == 502) {
+        Fluttertoast.showToast(msg: '  Server Down!!!!\n  Please try later :(');
+      } else {
         addUsernametoSF();
         addPasswordtoSF();
+        // addMobiletoSF();
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => SearchScreen(username: name,)),
+          MaterialPageRoute(
+              builder: (context) => SearchScreen(
+                    username: name,
+                  )),
         );
-         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text("Successfully LoggedIn.."),
-              ));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Successfully LoggedIn.."),
+        ));
       }
     }
 
@@ -316,7 +321,6 @@ class _LogInPageState extends State<LogInPage> {
             ),
           ));
     }
-
 
     return Scaffold(
         // backgroundColor: const Color(0xff1a1a1a),
