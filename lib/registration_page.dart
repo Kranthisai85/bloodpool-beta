@@ -383,6 +383,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           height: 55.0,
           child: TextFormField(
+            maxLength: 10,
             onChanged: (value) {
               setState(() {
                 phone = value;
@@ -396,6 +397,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               fontFamily: 'OpenSans',
             ),
             decoration: InputDecoration(
+              counterText: '',
               border: InputBorder.none,
               contentPadding: const EdgeInsets.only(top: 14.0),
               prefixIcon:
@@ -560,7 +562,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           height: 55.0,
           child: TextFormField(
-            // maxLength: 16,
+            maxLength: 14,
             onChanged: (value) {
               setState(() {
                 aadhar = value;
@@ -578,6 +580,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               fontFamily: 'OpenSans',
             ),
             decoration: InputDecoration(
+              counterText: '',
               border: InputBorder.none,
               contentPadding: const EdgeInsets.only(top: 14.0),
               prefixIcon: const Padding(
@@ -1007,40 +1010,53 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 25.0),
       width: double.infinity,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          primary: Colors.white,
-          elevation: 5.0,
-          padding: const EdgeInsets.all(15.0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30.0),
+      child: InkWell(
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            primary: Colors.white,
+            elevation: 5.0,
+            padding: const EdgeInsets.all(15.0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30.0),
+            ),
           ),
-        ),
-        onPressed: () async {
-          if (File(imageFile?.path ?? '').existsSync()) {
-            await uploadPhoto(imageFile!.path);
-            if (selectedBlood != null) {
-              if (name.isNotEmpty &&
-                  username.isNotEmpty &&
-                  aadhar.isNotEmpty &&
-                  confirmPassWord.isNotEmpty &&
-                  selectedDate != todaysDate &&
-                  passWord.isNotEmpty &&
-                  gender != null &&
-                  email.isNotEmpty &&
-                  phone.isNotEmpty) {
-                Fluttertoast.showToast(
-                  msg: 'Clicked on register button. Please wait for Response',
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.BOTTOM_LEFT,
-                  timeInSecForIosWeb: 1,
-                  backgroundColor: Colors.greenAccent,
-                  textColor: Colors.white,
-                );
-                validate();
+          onPressed: () async {
+            if (File(imageFile?.path ?? '').existsSync()) {
+               Fluttertoast.showToast(
+                    msg: 'Clicked on register button. Please wait for Response',
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.BOTTOM_LEFT,
+                    timeInSecForIosWeb: 1,
+                    backgroundColor: Colors.greenAccent,
+                    textColor: Colors.white,
+                  );
+              await uploadPhoto(imageFile!.path);
+              if (selectedBlood != null) {
+                if (name.isNotEmpty &&
+                    username.isNotEmpty &&
+                    aadhar.isNotEmpty &&
+                    confirmPassWord.isNotEmpty &&
+                    selectedDate != todaysDate &&
+                    passWord.isNotEmpty &&
+                    gender != null &&
+                    email.isNotEmpty &&
+                    phone.isNotEmpty) {
+
+                  validate();
+                } else {
+                  Fluttertoast.showToast(
+                    msg: 'Fill all given fields!',
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.BOTTOM_LEFT,
+                    timeInSecForIosWeb: 1,
+                    backgroundColor: Colors.greenAccent,
+                    textColor: Colors.white,
+                  );
+                }
               } else {
+                _scrollToTop();
                 Fluttertoast.showToast(
-                  msg: 'Fill all given fields!',
+                  msg: 'Select Your Bloodgroup!',
                   toastLength: Toast.LENGTH_SHORT,
                   gravity: ToastGravity.BOTTOM_LEFT,
                   timeInSecForIosWeb: 1,
@@ -1051,46 +1067,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
             } else {
               _scrollToTop();
               Fluttertoast.showToast(
-                msg: 'Select Your Bloodgroup!',
+                msg: 'Upload Image',
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.BOTTOM_LEFT,
                 timeInSecForIosWeb: 1,
-                backgroundColor: Colors.greenAccent,
+                backgroundColor: Colors.redAccent,
                 textColor: Colors.white,
               );
             }
-          } else {
-            _scrollToTop();
-            Fluttertoast.showToast(
-              msg: 'Upload Image',
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM_LEFT,
-              timeInSecForIosWeb: 1,
-              backgroundColor: Colors.redAccent,
-              textColor: Colors.white,
-            );
-          }
-          // print(imageFile!.path),
-          // print(selectedBlood),
-          // print(name),
-          // print(username),
-          // print(email),
-          // print(phone),
-          // print(selectedDate),
-          // print(aadhar),
-          // print(passWord),
-          // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          //   content: Text("Development in Progress\nCome back later..."),
-          // ))
-        },
-        child: const Text(
-          'REGISTER',
-          style: TextStyle(
-            color: Color(0xFF527DAA),
-            letterSpacing: 1.5,
-            fontSize: 18.0,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'OpenSans',
+            // print(imageFile!.path),
+            // print(selectedBlood),
+            // print(name),
+            // print(username),
+            // print(email),
+            // print(phone),
+            // print(selectedDate),
+            // print(aadhar),
+            // print(passWord),
+            // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            //   content: Text("Development in Progress\nCome back later..."),
+            // ))
+          },
+          child: const Text(
+            'REGISTER',
+            style: TextStyle(
+              color: Color(0xFF527DAA),
+              letterSpacing: 1.5,
+              fontSize: 18.0,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'OpenSans',
+            ),
           ),
         ),
       ),
@@ -1383,7 +1389,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             height: MediaQuery.of(context).size.height / 21,
                           ),
                           Text(
-                            'Register With Us...',
+                            'Donate With Us...',
                             style: GoogleFonts.poppins(
                               color: Colors.white,
                               fontSize: 25.0,
@@ -1409,7 +1415,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               _buildGender(),
                             ],
                           ),
-                          const SizedBox(height: 15.0),
+                          const SizedBox(height: 25.0),
                           _buildAadharTF(),
                           const SizedBox(height: 10.0),
                           _buildPasswordTF(),

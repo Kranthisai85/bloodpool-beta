@@ -33,6 +33,7 @@ class _SearchScreenState extends State<SearchScreen> {
   String? selectedBlood;
   Position? myLatPosition;
   GoogleMapController? newGoogleMapController;
+  List distances = [];
 
   @override
   initState() {
@@ -41,7 +42,7 @@ class _SearchScreenState extends State<SearchScreen> {
     // requestLocationPermission();
     requestLocationPermission();
     _gpsService();
-    locateMyPosition();
+    _getGeoLocationPosition();
   }
 
   searchData(String bloodgroup) async {
@@ -62,7 +63,8 @@ class _SearchScreenState extends State<SearchScreen> {
         allDonors = searchDonors;
       });
     } catch (e) {
-      Fluttertoast.showToast(msg: 'Database Error, Please report to bloodpool team');
+      Fluttertoast.showToast(
+          msg: 'Database Error, Please report to bloodpool team');
     }
   }
 
@@ -84,7 +86,7 @@ class _SearchScreenState extends State<SearchScreen> {
     // allDonors = responseData[]
   }
 
-  getLocation() async {
+  updateLocation() async {
     Future.delayed(const Duration(seconds: 5), () async {
       final response = await http.put(
           Uri.parse(
@@ -113,38 +115,39 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {
       myLatPosition = position;
     });
-
-    Fluttertoast.showToast(
-        msg: '${myLatPosition!.latitude},${myLatPosition!.longitude}');
-
-    getLocation();
-
-    // LatLng latLatPosition = LatLng(position.latitude, position.longitude);
-
-    // CameraPosition cameraPosition =
-    //     CameraPosition(target: latLatPosition, zoom: 15);
-
-    // newGoogleMapController!
-    //     .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+    updateLocation();
   }
 
-  // Future<bool> _requestPermission(PermissionGroup permission) async {
-  //   final PermissionHandler _permissionHandler = PermissionHandler();
-  //   var result = await _permissionHandler.requestPermissions([permission]);
-  //   if (result[permission] == PermissionStatus.granted) {
-  //     return true;
-  //   }
-  //   return false;
-  // }
-
-  // Future<bool> requestLocationPermission({Function onPermissionDenied}) async {
-  //   var granted = await _requestPermission(PermissionGroup.location);
-  //   if (granted != true) {
-  //     requestLocationPermission();
-  //   }
-  //   debugPrint('requestContactsPermission $granted');
-  //   return granted;
-  // }
+  void _getGeoLocationPosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+    // Test if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      // Location services are not enabled don't continue
+      // accessing the position and request users of the
+      // App to enable the location services.
+      await Geolocator.openLocationSettings();
+      return Future.error('Location services are disabled.');
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        Fluttertoast.showToast(
+            msg: 'Location permissions are denied.\nEnable to continue');
+        return Future.error('Location permissions are denied');
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      // Permissions are denied forever, handle appropriately.
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+    // When we reach here, permissions are granted and we can
+    // continue accessing the position of the device.
+    locateMyPosition();
+  }
 
   Future<void> requestLocationPermission() async {
     final serviceStatusLocation = await Permission.locationWhenInUse.isGranted;
@@ -303,11 +306,10 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
                 Row(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          top: 15.0, bottom: 15, right: 15, left: 15),
-                      child: SizedBox(
-                        width: 200,
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                            top: 15.0, bottom: 15, right: 15, left: 15),
                         child: DropdownButton(
                             isExpanded: true,
                             underline: const SizedBox(),
@@ -421,59 +423,96 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: allDonors.isNotEmpty
                       ? ListView.builder(
                           itemCount: allDonors.length,
-                          itemBuilder: (context, index) => Card(
-                            // key: ValueKey(allDonors.isNotEmpty ? allDonors[index]["bloodgroup"] : 'index'),
-                            color: Colors.amberAccent,
-                            elevation: 5,
-                            margin: const EdgeInsets.symmetric(vertical: 10),
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => ProfileScreen(
-                                          donorDetails: allDonors[index])),
-                                );
-                              },
-                              child: ListTile(
-                                leading: Text(
-                                  // _foundUsers[index]["id"].toString(),
-                                  allDonors.isNotEmpty
-                                      ? allDonors[index]["bloodgroup"]
-                                      : '$index',
-                                  style: const TextStyle(fontSize: 24),
-                                ),
-                                title: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(allDonors[index]['name'],
-                                        style: const TextStyle(fontSize: 17)),
-                                    Text(
-                                        allDonors[index]['mobilenumber']
-                                                    .toString() ==
-                                                'null'
-                                            ? 'No Number'
-                                            : 'Tap for details',
-                                        // : allDonors[index]['mobilenumber']
-                                        //     .toString(),
-                                        style: const TextStyle(fontSize: 15))
-                                  ],
-                                ),
-                                subtitle: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                        '${allDonors[index]["age"].toString()} years old'),
-                                    Text(
-                                        '${((random.nextDouble()) * random.nextInt(index + 10)).toStringAsFixed(2)} km away'),
-                                  ],
+                          itemBuilder: (context, index) {
+                            // final sortedItems = allDonors[index]["bloodgroup"];
+                            return Card(
+                              // key: ValueKey(allDonors.isNotEmpty ? allDonors[index]["bloodgroup"] : 'index'),
+                              color: Colors.amberAccent,
+                              elevation: 5,
+                              margin: const EdgeInsets.symmetric(vertical: 10),
+                              child: GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => ProfileScreen(
+                                            donorDetails: allDonors[index])),
+                                  );
+                                },
+                                child: ListTile(
+                                  leading: Text(
+                                    // _foundUsers[index]["id"].toString(),
+                                    allDonors.isNotEmpty
+                                        ? allDonors[index]["bloodgroup"]
+                                        : '$index',
+                                    style: const TextStyle(fontSize: 24),
+                                  ),
+                                  title: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(allDonors[index]['name'],
+                                          style: const TextStyle(fontSize: 17)),
+                                      Text(
+                                          allDonors[index]['mobilenumber']
+                                                      .toString() ==
+                                                  'null'
+                                              ? 'No Number'
+                                              : 'Tap for details',
+                                          // : allDonors[index]['mobilenumber']
+                                          //     .toString(),
+                                          style: const TextStyle(fontSize: 15))
+                                    ],
+                                  ),
+                                  subtitle: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                          '${allDonors[index]["age"].toString()} years old'),
+                                      myLatPosition != null
+                                          ? myLatPosition!.latitude != null &&
+                                                  myLatPosition!.longitude !=
+                                                      null &&
+                                                  allDonors[index]
+                                                          ['latitude'] !=
+                                                      null &&
+                                                  allDonors[index]
+                                                          ['longitude'] !=
+                                                      null
+                                              ? (Geolocator.distanceBetween(
+                                                                  myLatPosition!
+                                                                      .latitude,
+                                                                  myLatPosition!
+                                                                      .longitude,
+                                                                  allDonors[
+                                                                          index]
+                                                                      [
+                                                                      'latitude'],
+                                                                  allDonors[
+                                                                          index]
+                                                                      [
+                                                                      'longitude']) /
+                                                              1000)
+                                                          .toStringAsFixed(2) !=
+                                                      '0.00'
+                                                  ? Text(
+                                                      '${(Geolocator.distanceBetween(myLatPosition!.latitude, myLatPosition!.longitude, allDonors[index]['latitude'], allDonors[index]['longitude']) / 1000).toStringAsFixed(2)}'
+                                                      ' km away')
+                                                  : Text(
+                                                      '${(Geolocator.distanceBetween(myLatPosition!.latitude, myLatPosition!.longitude, allDonors[index]['latitude'], allDonors[index]['longitude'])).toStringAsFixed(3)}'
+                                                      ' m near')
+                                              : const Text('Not Found')
+                                          : const Text('Searching...'),
+                                      // Text(
+                                      //     '${((random.nextDouble()) * random.nextInt(index + 10)).toStringAsFixed(2)} km away'),
+                                      // Geolocator.distanceBetween(myLatPosition!.latitude, myLatPosition!.longitude, allDonors[index]['latitude'], allDonors[index]['longitude']),
+                                    ],
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                        )
+                            );
+                          })
                       : Text(
                           sometext!,
                           style: const TextStyle(fontSize: 24),
