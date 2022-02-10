@@ -33,7 +33,6 @@ class _SearchScreenState extends State<SearchScreen> {
   String? selectedBlood;
   Position? myLatPosition;
   GoogleMapController? newGoogleMapController;
-  List distances = [];
 
   @override
   initState() {
@@ -424,7 +423,25 @@ class _SearchScreenState extends State<SearchScreen> {
                       ? ListView.builder(
                           itemCount: allDonors.length,
                           itemBuilder: (context, index) {
-                            // final sortedItems = allDonors[index]["bloodgroup"];
+                            allDonors
+                              .sort((a, b) => (a['latitude'] != null &&
+                                          a['longitude'] != null
+                                      ? Geolocator.distanceBetween(
+                                          myLatPosition!.latitude,
+                                          myLatPosition!.longitude,
+                                          a['latitude'],
+                                          a['longitude'])
+                                      : double.infinity)
+                                  .compareTo(b['latitude'] != null &&
+                                          b['longitude'] != null
+                                      ? Geolocator.distanceBetween(
+                                          myLatPosition!.latitude,
+                                          myLatPosition!.longitude,
+                                          b['latitude'],
+                                          b['longitude'])
+                                      : double.infinity));
+                            // print(sortedItems);
+                            // items = sortedItems[index];
                             return Card(
                               // key: ValueKey(allDonors.isNotEmpty ? allDonors[index]["bloodgroup"] : 'index'),
                               color: Colors.amberAccent,
@@ -500,7 +517,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                                       '${(Geolocator.distanceBetween(myLatPosition!.latitude, myLatPosition!.longitude, allDonors[index]['latitude'], allDonors[index]['longitude']) / 1000).toStringAsFixed(2)}'
                                                       ' km away')
                                                   : Text(
-                                                      '${(Geolocator.distanceBetween(myLatPosition!.latitude, myLatPosition!.longitude, allDonors[index]['latitude'], allDonors[index]['longitude'])).toStringAsFixed(3)}'
+                                                      '${(Geolocator.distanceBetween(myLatPosition!.latitude, myLatPosition!.longitude, allDonors[index]['latitude'], allDonors[index]['longitude'])).toStringAsFixed(2)}'
                                                       ' m near')
                                               : const Text('Not Found')
                                           : const Text('Searching...'),
