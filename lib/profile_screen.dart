@@ -31,8 +31,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? locationInfo;
 
   getIdData(String? id) async {
-    final response =
-        await http.get('https://bloodpool-backend.herokuapp.com/find/$id');
+    final response = await http
+        .get(Uri.parse('https://bloodpool-backend.herokuapp.com/find/$id'));
 
     var responseData = json.decode(response.body);
 
@@ -87,7 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         });
       } catch (e) {
         print(e);
-         setState(() {
+        setState(() {
           address = '$latitude,$longitude';
         });
       }

@@ -53,8 +53,8 @@ class _SearchScreenState extends State<SearchScreen> {
     });
 
     var paramsData = bloodgroup;
-    final response = await http
-        .get('https://bloodpool-backend.herokuapp.com/search/$paramsData');
+    final response = await http.get(Uri.parse(
+        'https://bloodpool-backend.herokuapp.com/search/$paramsData'));
     try {
       var responseData = json.decode(response.body);
       setState(() {
@@ -74,8 +74,8 @@ class _SearchScreenState extends State<SearchScreen> {
         sometext = "No Results Found";
       });
     });
-    final response =
-        await http.get('https://bloodpool-backend.herokuapp.com/find');
+    final response = await http
+        .get(Uri.parse('https://bloodpool-backend.herokuapp.com/find'));
 
     var responseData = json.decode(response.body);
     setState(() {
@@ -150,8 +150,6 @@ class _SearchScreenState extends State<SearchScreen> {
 
   Future<void> requestLocationPermission() async {
     final serviceStatusLocation = await Permission.locationWhenInUse.isGranted;
-
-    bool isLocation = serviceStatusLocation == ServiceStatus.enabled;
 
     final status = await Permission.locationWhenInUse.request();
 
@@ -423,23 +421,22 @@ class _SearchScreenState extends State<SearchScreen> {
                       ? ListView.builder(
                           itemCount: allDonors.length,
                           itemBuilder: (context, index) {
-                            allDonors
-                              .sort((a, b) => (a['latitude'] != null &&
-                                          a['longitude'] != null
-                                      ? Geolocator.distanceBetween(
-                                          myLatPosition!.latitude,
-                                          myLatPosition!.longitude,
-                                          a['latitude'],
-                                          a['longitude'])
-                                      : double.infinity)
-                                  .compareTo(b['latitude'] != null &&
-                                          b['longitude'] != null
-                                      ? Geolocator.distanceBetween(
-                                          myLatPosition!.latitude,
-                                          myLatPosition!.longitude,
-                                          b['latitude'],
-                                          b['longitude'])
-                                      : double.infinity));
+                            allDonors.sort((a, b) =>
+                                (a['latitude'] != null && a['longitude'] != null
+                                        ? Geolocator.distanceBetween(
+                                            myLatPosition!.latitude,
+                                            myLatPosition!.longitude,
+                                            a['latitude'],
+                                            a['longitude'])
+                                        : double.infinity)
+                                    .compareTo(b['latitude'] != null &&
+                                            b['longitude'] != null
+                                        ? Geolocator.distanceBetween(
+                                            myLatPosition!.latitude,
+                                            myLatPosition!.longitude,
+                                            b['latitude'],
+                                            b['longitude'])
+                                        : double.infinity));
                             // print(sortedItems);
                             // items = sortedItems[index];
                             return Card(

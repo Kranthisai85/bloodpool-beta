@@ -10,10 +10,10 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:imgur/imgur.dart' as imgur;
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloudinary_public/cloudinary_public.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -55,7 +55,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   late String name = "";
   late String username = "";
   late DateTime dob;
-
   late String aadhar = "";
   late String bloodgroup = "";
   late String confirmPassWord = "";
@@ -78,6 +77,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   DateTime todaysDate = DateTime.now();
   DateTime? selectedDate = DateTime.now();
   ScrollController? _scrollController;
+  final cloudinary =
+      CloudinaryPublic('bloodpool123', 'bloodpool', cache: false);
 
   var geolocator = Geolocator();
   Position? myLatPosition;
@@ -811,17 +812,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   uploadPhoto(String imageFilePath) async {
-    final client = imgur.Imgur(imgur.Authentication.fromToken(
-        '833904ad3cf8ff0e456f21cbf3370277684d3843'));
-    await client.image
-        .uploadImage(
-            imagePath: imageFilePath, title: name, description: 'profile photo')
-        .then((image) => {
-              print('Uploaded image to: ${image.link}'),
-              setState(() {
-                imageLink = image.link;
-              })
-            });
+    try {
+      CloudinaryResponse response = await cloudinary.uploadFile(
+        CloudinaryFile.fromFile(imageFilePath,
+            resourceType: CloudinaryResourceType.Image),
+      );
+      print(response.secureUrl);
+      setState(() {
+        imageLink = response.secureUrl;
+      });
+      print(imageLink);
+    } on CloudinaryException catch (e) {
+      print(e.message);
+      print(e.request);
+    }
   }
 
   void _getFromGallery() async {
@@ -832,7 +836,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
     try {
       setState(() {
-        imageFile = File(pickedFile.path);
+        imageFile = File(pickedFile!.path);
         print(imageFile);
         // uploadPhoto(imageFile!.path);
       });
@@ -1022,14 +1026,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           onPressed: () async {
             if (File(imageFile?.path ?? '').existsSync()) {
-               Fluttertoast.showToast(
-                    msg: 'Clicked on register button. Please wait for Response',
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM_LEFT,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.greenAccent,
-                    textColor: Colors.white,
-                  );
+              Fluttertoast.showToast(
+                msg: 'Clicked on register button. Please wait for Response',
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM_LEFT,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.greenAccent,
+                textColor: Colors.white,
+              );
               await uploadPhoto(imageFile!.path);
               if (selectedBlood != null) {
                 if (name.isNotEmpty &&
@@ -1041,7 +1045,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     gender != null &&
                     email.isNotEmpty &&
                     phone.isNotEmpty) {
-
                   validate();
                 } else {
                   Fluttertoast.showToast(

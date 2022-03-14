@@ -74,8 +74,8 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   getLocationData() async {
-    final response = await http.get(
-        'https://bloodpool-backend.herokuapp.com/locations/${widget.bloodgroup}');
+    final response = await http.get(Uri.parse(
+        'https://bloodpool-backend.herokuapp.com/locations/${widget.bloodgroup}'));
 
     setState(() {
       responseData = json.decode(response.body);
@@ -85,7 +85,7 @@ class _MapScreenState extends State<MapScreen> {
   Set<Marker> getmarkers() {
     //markers to place on map
     setState(() {
-      if(responseData != null) {
+      if (responseData != null) {
         for (int i = 0; i <= responseData.length - 1; i++) {
           if (responseData[i]['latitude'] != null) {
             markers.add(Marker(
@@ -181,7 +181,13 @@ class _MapScreenState extends State<MapScreen> {
                           'Select Donor Location ',
                           style: TextStyle(color: Colors.grey, fontSize: 20),
                         ),
-                        responseData != null ? Text('(' '${responseData.length} ''found)',style:TextStyle(fontSize: 18,color: Colors.grey[400],fontStyle: FontStyle.italic)) : const Text('')
+                        responseData != null
+                            ? Text('(' '${responseData.length} ' 'found)',
+                                style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey[400],
+                                    fontStyle: FontStyle.italic))
+                            : const Text('')
                       ],
                     ),
                   ),
